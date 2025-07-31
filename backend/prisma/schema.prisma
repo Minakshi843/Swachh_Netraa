@@ -1,0 +1,124 @@
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+  console.log('Starting seed...');
+
+  // Create Zones
+  const zones = await Promise.all([
+    prisma.zone.create({ data: { name: 'North Zone' } }),
+    prisma.zone.create({ data: { name: 'South Zone' } }),
+    prisma.zone.create({ data: { name: 'East Zone' } }),
+    prisma.zone.create({ data: { name: 'West Zone' } })
+  ]);
+  console.log('Created zones:', zones.length);
+
+  // Create Wards
+  const wards = await Promise.all([
+    prisma.ward.create({ data: { name: 'Ward 1A', zone_id: zones[0].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 1B', zone_id: zones[0].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 2A', zone_id: zones[1].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 2B', zone_id: zones[1].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 3A', zone_id: zones[2].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 3B', zone_id: zones[2].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 4A', zone_id: zones[3].zone_id } }),
+    prisma.ward.create({ data: { name: 'Ward 4B', zone_id: zones[3].zone_id } })
+  ]);
+  console.log('Created wards:', wards.length);
+
+  // Create Routes
+  const routes = await Promise.all([
+    prisma.route.create({ data: { name: 'Route A1' } }),
+    prisma.route.create({ data: { name: 'Route A2' } }),
+    prisma.route.create({ data: { name: 'Route B1' } }),
+    prisma.route.create({ data: { name: 'Route B2' } })
+  ]);
+  console.log('Created routes:', routes.length);
+
+  // Create Vehicles
+  const vehicles = await Promise.all([
+    prisma.vehicle.create({ data: { vehicle_number: 'MH01AB1234', vehicle_type: 'Truck', capacity: 1000 } }),
+    prisma.vehicle.create({ data: { vehicle_number: 'MH01AB5678', vehicle_type: 'Van', capacity: 500 } }),
+    prisma.vehicle.create({ data: { vehicle_number: 'MH01CD9012', vehicle_type: 'Truck', capacity: 1200 } }),
+    prisma.vehicle.create({ data: { vehicle_number: 'MH01EF3456', vehicle_type: 'Van', capacity: 600 } })
+  ]);
+  console.log('Created vehicles:', vehicles.length);
+
+  // Create Shifts
+  const shifts = await Promise.all([
+    prisma.shift.create({ 
+      data: { 
+        shift_name: 'Morning Shift', 
+        shift_start_time: new Date('1970-01-01T06:00:00Z'),
+        shift_end_time: new Date('1970-01-01T14:00:00Z')
+      } 
+    }),
+    prisma.shift.create({ 
+      data: { 
+        shift_name: 'Evening Shift', 
+        shift_start_time: new Date('1970-01-01T14:00:00Z'),
+        shift_end_time: new Date('1970-01-01T22:00:00Z')
+      } 
+    })
+  ]);
+  console.log('Created shifts:', shifts.length);
+
+  // Create Feeder Points
+  const feederPoints = await Promise.all([
+    prisma.feederPoint.create({ data: { name: 'FP-001', ward_id: wards[0].ward_id, location: 'Main Street Corner' } }),
+    prisma.feederPoint.create({ data: { name: 'FP-002', ward_id: wards[1].ward_id, location: 'Park Avenue' } }),
+    prisma.feederPoint.create({ data: { name: 'FP-003', ward_id: wards[2].ward_id, location: 'Market Square' } }),
+    prisma.feederPoint.create({ data: { name: 'FP-004', ward_id: wards[3].ward_id, location: 'Bus Stand' } })
+  ]);
+  console.log('Created feeder points:', feederPoints.length);
+
+  // Create Employees
+  const employees = await Promise.all([
+    prisma.employee.create({
+      data: {
+        name: 'John Doe',
+        phone: '9876543210',
+        role: 'Supervisor',
+        zone_id: zones[0].zone_id,
+        ward_id: wards[0].ward_id,
+        assigned_route_id: routes[0].route_id,
+        assigned_vehicle_id: vehicles[0].vehicle_id,
+        shift_id: shifts[0].shift_id
+      }
+    }),
+    prisma.employee.create({
+      data: {
+        name: 'Jane Smith',
+        phone: '9876543211',
+        role: 'Swachh Worker',
+        zone_id: zones[0].zone_id,
+        ward_id: wards[0].ward_id,
+        shift_id: shifts[0].shift_id
+      }
+    }),
+    prisma.employee.create({
+      data: {
+        name: 'Mike Johnson',
+        phone: '9876543212',
+        role: 'Driver',
+        zone_id: zones[1].zone_id,
+        ward_id: wards[2].ward_id,
+        assigned_vehicle_id: vehicles[1].vehicle_id,
+        shift_id: shifts[1].shift_id
+      }
+    })
+  ]);
+  console.log('Created employees:', employees.length);
+
+  console.log('Seed completed successfully!');
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+
